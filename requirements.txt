@@ -1,4 +1,7 @@
-matplotlib
-numpy
-torchvision
 torch
+torchvision
+torchaudio
+numpy
+pandas
+matplotlib
+scikit-learn
