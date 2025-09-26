@@ -12,10 +12,10 @@ The work progresses through:
 ---
 
 ## 🗂 Repository Structure
-- `writing/` → Proposal draft, chapters  
-- `prototyping/` → Jupyter notebooks (week-01, week-02, …)  
-- `docs/` → Timeline, mind maps, notes  
-- `papers/` → Research papers (to be added)  
+- `writing/`  Proposal draft, chapters  
+- `prototyping/`  Jupyter notebooks (week-01, week-02, …)  
+- `docs/` Timeline, mind maps, notes  
+- `papers/` Research papers (to be added)  
 
 ---
 
