@@ -15,27 +15,7 @@ The work progresses through:
 - `writing/`  Proposal draft, chapters  
 - `prototyping/`  Jupyter notebooks (week-01, week-02, …)  
 - `docs/` Timeline, mind maps, notes  
-- `papers/` Research papers (to be added)  
-
----
-
-## 📆 Weekly Progress
-- **Week 01:** Repo setup, environment check, initial proposal & timeline  
-- **Week 02 (current):** Dataset selection, baseline CNN setup, updated mind map  
-- ### Week 03 (current)
-- ✅ Environment setup on Apple Silicon (MPS enabled).
-- ✅ Saved reproducibility snapshot: [`requirements-week-03.txt`](prototyping/week-03/requirements-week-03.txt).
-- ✅ Implemented results-saving pipeline (figures + model checkpoints in [`week-03/results/`](prototyping/week-03/results/)).
-- ✅ Downloaded and explored MedMNIST subsets:
-  - **ChestMNIST** (multi-label chest X-rays, 14 classes)  
-  - **PneumoniaMNIST** (binary chest X-rays: pneumonia vs normal)  
-  - **BreastMNIST** (binary ultrasound: benign vs malignant)  
-- ✅ Sample visualizations (inline + saved):  
-  ![ChestMNIST samples](prototyping/week-03/results/chestmnist_samples.png)  
-  ![PneumoniaMNIST samples](prototyping/week-03/results/pneumoniamnist_samples.png)  
-  ![BreastMNIST samples](prototyping/week-03/results/breastmnist_samples.png)  
-- 🔄 Next: class balance analysis, train/val/test splits, ResNet-18 baseline training.
-
+- `papers/` Research papers (to be added)
 
 ---
 
