@@ -20,5 +20,5 @@ The work progresses through:
 ---
 
 ## 📊 Live Artifacts
-- **Mind Map (Week 02):** [View here](docs/mindmap/Week-02-MindMap.jpg)  
+- **Mind Map (Week 02):** [View here](https://miro.com/app/board/uXjVJG3gkho=/?share_link_id=99591478191)  
 - **Timeline:** [Online Timeline Link](https://lucid.app/lucidspark/2fad6656-20b7-4f39-a95c-0990db562e5e/edit?view_items=5RZRUojyXmSD%2C5RZRQqoXsTRC%2C5RZR4vbKYD9q%2C5RZRbRlaxj-w%2Coh0R6rOm6Mg0%2C5RZRdNYzQt86%2CX2ZRJQ0Knb8I%2C69ZRS7SA1n7E%2Co~ZR4xZhlQup%2CKa0Rzc64HLAM%2C5RZR59mqLbCg%2Cd-ZRYgiCt_EP%2Cs-ZRtzfBb6Rc%2C7a0RKooJqp19%2Cx~ZRLVxTPDd7&invitationId=inv_921d1c01-e7e2-4348-804a-78b9fd5b8787)  
