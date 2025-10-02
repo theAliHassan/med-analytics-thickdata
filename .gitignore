@@ -14,4 +14,3 @@ build/
 /data/
 */data/
 prototyping/**/outputs/
-*.pth
