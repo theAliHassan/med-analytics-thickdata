@@ -15,3 +15,4 @@ build/
 */data/
 prototyping/**/outputs/
 *.pth
+prototyping/week-03/.ipynb_checkpoints/
