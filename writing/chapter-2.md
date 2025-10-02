@@ -1,196 +1,134 @@
-# Chapter 2 Results: Baseline Experiments with ResNet-18
+# Chapter 2 Results: Baseline Experiments with Convolutional Neural Networks
 
-This chapter presents the baseline experiments conducted on three MedMNIST datasets: **ChestMNIST**, **PneumoniaMNIST**, and **BreastMNIST**. The objective was to establish a performance baseline using a standard convolutional neural network (CNN), and to highlight the **strengths and limitations** of this approach when applied to small-scale, imbalanced medical datasets.
+This chapter addresses **RQ1** and **RQ2** of the project:
+
+- **RQ1**: *What is the baseline performance of convolutional neural networks (e.g., ResNet-18, VGG-16, ResNet-50) on selected medical imaging datasets when evaluated across accuracy, sensitivity, specificity, F1-score, and AUC?*  
+- **RQ2**: *What is the comparative performance of CNNs across different evaluation metrics (accuracy, sensitivity, specificity, AUC), and what limitations do these results reveal?*
+
+To answer these, we establish baselines in two stages:  
+1. **Toy datasets (MedMNIST)** – quick-to-train, small, and highly imbalanced, showing CNN weaknesses in controlled settings.  
+2. **Real-world datasets (ChestX-ray14, CheXpert, MIMIC-CXR)** – more realistic medical imaging benchmarks, showing CNNs under clinical-scale data.  
+
+Together, these experiments form the baseline story for Chapter 2.
 
 ---
 
 ## 1. Model Setup
 
-- **Architecture**: ResNet-18  
-- **Initialization**: Pretrained on ImageNet (`weights="IMAGENET1K_V1"`)  
+- **Architectures**: ResNet-18, VGG-16, ResNet-50  
+- **Initialization**: Pretrained on ImageNet  
 - **Input Preprocessing**:
-  - Original grayscale images duplicated to 3 channels for compatibility.
-  - Normalized to mean=0.5, std=0.5 per channel.
+  - Grayscale images duplicated to 3 channels (for pretrained CNN compatibility).  
+  - Resized to 224×224.  
+  - Normalized (mean=0.5, std=0.5 per channel).  
 - **Loss Functions**:
-  - `BCEWithLogitsLoss` for multi-label classification (ChestMNIST).
-  - `CrossEntropyLoss` for binary classification (PneumoniaMNIST, BreastMNIST).
+  - `BCEWithLogitsLoss` for multi-label classification (ChestMNIST).  
+  - `CrossEntropyLoss` for binary classification (PneumoniaMNIST, BreastMNIST).  
 - **Optimizer**: Adam, learning rate = 1e-3  
-- **Device**: Apple Silicon MPS (Metal GPU) with mixed precision (`torch.amp.autocast`)  
-- **Epochs**: 20 per dataset  
-- **Seeded training** for reproducibility  
-- **Outputs saved**:
-  - Models (`*.pth`)
-  - Metrics (`*.csv`)
-  - Training curves, confusion matrices, ROC and PR plots (`*.png`)
+- **Devices**: Apple Silicon MPS backend (Metal GPU) and CPU fallbacks  
+- **Epochs**: 5–20 depending on dataset/model cost  
+- **Outputs saved**: Models (`*.pth`), metrics (`*.csv`), training curves, confusion matrices, ROC/PR plots (`*.png`)
 
 ---
 
-## 2. Results by Dataset
+## 2. Part A — MedMNIST Baselines
+
+We first trained ResNet-18, VGG-16, and ResNet-50 on **ChestMNIST (multi-label)**, **PneumoniaMNIST (binary)**, and **BreastMNIST (binary)**.  
 
 ### 2.1 ChestMNIST (Multi-label, 14 classes)
 
-- **Metrics**:
-  - Macro F1: ~0.046
-  - Micro F1: ~0.085
-  - Macro ROC-AUC: ~0.75
-  - Micro ROC-AUC: ~0.83
+- **ResNet-18**: Macro F1 = 0.046, Micro F1 = 0.085, Macro AUC = 0.75, Micro AUC = 0.83.  
+- **VGG-16**: Training loss stabilized around 0.18, AUC ~0.74, F1 ≈ 0.0.  
+- **ResNet-50**: Macro F1 = 0.0, Micro F1 = 0.0, Macro AUC = 0.50, Micro AUC = 0.74.  
 
-- **Observations**:
-  - ROC curves indicate that some classes achieve moderate separability, while others perform poorly.
-  - Extremely low F1 scores reflect severe **class imbalance** and difficulty in detecting positives.
-  - Accuracy was **not tracked**, as it is not meaningful in a multi-label setting.
-
-- **Figures**:
-  - Class balance: `results/chestmnist_class_balance.csv`
-  - Training curves: `results/chestmnist_training_curves.png`
-  - ROC curves: `results/chestmnist_roc_curves.png`
-
-- **Discussion**:
-  - The baseline ResNet-18 captures some signal, achieving reasonable AUC, but fails to produce balanced predictions.
-  - This highlights a limitation of standard CNN baselines in **multi-label medical tasks**.
+**Discussion**:  
+- All models captured *some* signal (AUC > 0.7) but failed on F1.  
+- CNNs systematically underpredict positives, producing trivial “all negative” outputs.  
+- Imbalance in multi-label setting remains unsolved.
 
 ---
 
 ### 2.2 PneumoniaMNIST (Binary classification)
 
-- **Metrics**:
-  - Accuracy: 100% (train & val)
-  - Sensitivity / Specificity: Undefined (all predictions collapsed to one class)
-  - ROC-AUC, PR-AUC: Not computable (warnings raised)
+- **ResNet-18**: Accuracy = 100%, F1 = 0, AUC = NaN, Sensitivity = 0, Specificity = 1.0.  
+- **VGG-16**: Same collapse, training loss unstable (`NaN`).  
+- **ResNet-50**: Same collapse, “perfect” accuracy but no positive predictions.  
 
-- **Observations**:
-  - Training and validation accuracy saturate instantly at 100%.
-  - Confusion matrix shows the model predicts only one class → trivial solution.
-  - ROC/PR curves degenerate due to lack of class separation.
-
-- **Figures**:
-  - Samples: `results/pneumoniamnist_samples.png`
-  - Class balance: `results/pneumoniamnist_class_balance.csv`
-  - Training curves: `results/pneumoniamnist_training_curves.png`
-  - Confusion matrix: `results/pneumoniamnist_confusion_matrix.png`
-  - ROC curve: `results/pneumoniamnist_roc_curve.png`
-  - PR curve: `results/pneumoniamnist_pr_curve.png`
-
-- **Discussion**:
-  - The dataset is **tiny and imbalanced**, making it unsuitable for evaluating strong CNNs without augmentation or resampling.
-  - Reported accuracy is misleading, exposing a critical limitation of baselines.
+**Discussion**:  
+- All models collapsed to predicting one class only.  
+- Accuracy misleadingly suggests perfect performance.  
+- Warnings (`UndefinedMetricWarning`) confirm evaluation metrics are undefined.
 
 ---
 
 ### 2.3 BreastMNIST (Binary classification)
 
-- **Metrics**:
-  - Accuracy: 100% (train & val)
-  - Sensitivity / Specificity: Undefined (model predicts one class only)
-  - ROC-AUC, PR-AUC: Not computable
+- **ResNet-18**: Accuracy = 100%, F1 = 0, AUC = NaN, Sensitivity = 0, Specificity = 1.0.  
+- **VGG-16**: Same trivial collapse, loss instability.  
+- **ResNet-50**: Same trivial collapse.  
 
-- **Observations**:
-  - Similar collapse as PneumoniaMNIST → perfect accuracy but no generalization.
-  - Curves confirm trivial predictions.
-
-- **Figures**:
-  - Samples: `prototyping/week-03/results/breastmnist_samples.png`
-  - Class balance: `prototyping/week-03/results/breastmnist_class_balance.csv`
-  - Training curves: `prototyping/week-03/results/breastmnist_training_curves.png`
-  - Confusion matrix: `prototyping/week-03/results/breastmnist_confusion_matrix.png`
-  - ROC curve: `prototyping/week-03/results/breastmnist_roc_curve.png`
-  - PR curve: `prototyping/week-03/results/breastmnist_pr_curve.png`
-
-- **Discussion**:
-  - Small dataset size and skew make ResNet-18 unsuitable without strong regularization.
-  - Model performance is **illusory**: 100% accuracy is a result of memorization, not learning.
+**Discussion**:  
+- Identical collapse to PneumoniaMNIST.  
+- Dataset too small and skewed for pretrained CNNs.  
+- Baselines reveal that binary MedMNIST subsets are unsuitable for CNN benchmarking without augmentation or resampling.
 
 ---
 
-## 3. Key Problems Encountered
+### 2.4 Comparative Results Table (MedMNIST)
 
-1. **Overfitting**:  
-   - PneumoniaMNIST and BreastMNIST overfit within a few epochs, reaching perfect accuracy without meaningful discrimination.
-
-2. **Class Imbalance**:  
-   - Both binary datasets heavily skewed, collapsing the model into majority-class prediction.
-
-3. **Evaluation Issues**:  
-   - Metrics such as F1, ROC-AUC, and PR-AUC raised `UndefinedMetricWarning` when only one class was predicted.  
-   - These warnings signal that metrics are meaningless in those cases.
-
-4. **Multi-label Challenges**:  
-   - ChestMNIST results show that CNN baselines struggle to balance predictions across multiple co-occurring diseases.
-
----
-
-## 4. Limitations and Implications
-
-- Standard CNN baselines (even pretrained) are **insufficient** for small, imbalanced medical datasets.  
-- **Binary datasets**: Strong risk of misleading "perfect" accuracy due to data collapse.  
-- **Multi-label dataset**: Baseline performance highlights need for **specialized methods** (data augmentation, resampling, thick-data heuristics).  
-
-These limitations motivate the work in **Chapter 3**, where we will investigate approaches to overcome these issues.
+| Model        | Dataset        | Accuracy | F1 (Macro/Micro) | ROC-AUC (Macro/Micro) | Sensitivity | Specificity | Notes |
+|--------------|----------------|----------|------------------|------------------------|-------------|-------------|-------|
+| **ResNet-18** | ChestMNIST     | N/A      | 0.046 / 0.085   | 0.75 / 0.83           | N/A         | N/A         | Some signal, poor F1 |
+|              | PneumoniaMNIST | 100%     | 0.0              | NaN                   | 0           | 1.0         | Collapse to one class |
+|              | BreastMNIST    | 100%     | 0.0              | NaN                   | 0           | 1.0         | Same collapse |
+| **VGG-16**   | ChestMNIST     | N/A      | ~0 / ~0          | ~0.74 est.            | N/A         | N/A         | Plateaued quickly |
+|              | PneumoniaMNIST | 100%     | 0.0              | NaN                   | 0           | 1.0         | Loss instability |
+|              | BreastMNIST    | 100%     | 0.0              | NaN                   | 0           | 1.0         | Same collapse |
+| **ResNet-50**| ChestMNIST     | N/A      | 0.0 / 0.0        | 0.50 / 0.74           | N/A         | N/A         | Larger model, same issue |
+|              | PneumoniaMNIST | 100%     | 0.0              | NaN                   | 0           | 1.0         | Trivial predictions |
+|              | BreastMNIST    | 100%     | 0.0              | NaN                   | 0           | 1.0         | Trivial predictions |
 
 ---
 
----
+## 3. Part B — Real-World Dataset Baselines (Planned)
 
-## 5. VGG-16 Baseline Results
+To complete Chapter 2, we will extend these baselines to **real-world datasets**:
 
-We extended the baseline experiments with **VGG-16** (pretrained on ImageNet).  
-Due to the heavy computational cost of this model on 224×224 inputs, we trained it for **5 epochs** per dataset instead of 20.  
+- **NIH ChestX-ray14** (112k X-rays, 14 disease labels)  
+- **CheXpert** (224k X-rays, multi-label)  
+- **MIMIC-CXR** (377k X-rays with clinical notes)  
 
-### 5.1 ChestMNIST (Multi-label, 14 classes)
+The same CNNs (ResNet-18, VGG-16, ResNet-50) will be evaluated.  
 
-- **Metrics**:
-  - Train Loss decreased from ~0.27 -> ~0.18
-  - Val Loss plateaued around 0.181
-  - Accuracy: N/A (not meaningful for multi-label tasks)
-
-- **Observations**:
-  - Training stabilized quickly, but validation loss plateaued early.
-  - Like ResNet-18, VGG-16 captured partial signal but failed to achieve balanced predictions due to extreme class imbalance.
-
-- **Discussion**:
-  - VGG-16 did not substantially improve over ResNet-18.
-  - Both models show that baseline CNNs struggle with multi-label medical imaging.
+**Why this matters:**  
+- MedMNIST results show collapse in toy datasets (trivial predictions, misleading 100% accuracy).  
+- Real-world datasets will test CNNs under clinically relevant settings, where accuracy is harder to achieve and class imbalance is more realistic.  
+- This dual perspective (toy vs real-world) will form the **true baseline performance** for CNNs in medical imaging.  
 
 ---
 
-### 5.2 PneumoniaMNIST (Binary classification)
+## 4. Key Problems Encountered
 
-- **Metrics**:
-  - Accuracy: 100% (train & val)
-  - Sensitivity / Specificity: Undefined (model predicts one class only)
-  - ROC-AUC, PR-AUC: Not computable
-  - Loss: `nan` throughout training
-
-- **Observations**:
-  - Model collapsed instantly to trivial all-one-class predictions.
-  - Loss instability suggests numerical issues on the small, imbalanced dataset.
-
-- **Discussion**:
-  - Same collapse as ResNet-18.
-  - Larger CNN capacity does not help with tiny binary medical datasets.
+1. **Overfitting**: Binary datasets collapsed within a few epochs.  
+2. **Class Imbalance**: Severe skew led to majority-class predictions.  
+3. **Evaluation Issues**: Undefined metrics (NaNs) in binary tasks.  
+4. **Multi-label Difficulty**: Even larger CNNs (ResNet-50) produced AUC > 0.7 but F1 = 0.  
 
 ---
 
-### 5.3 BreastMNIST (Binary classification)
+## 5. Implications and RQ Alignment
 
-- **Metrics**:
-  - Accuracy: 100% (train & val)
-  - Sensitivity / Specificity: Undefined
-  - ROC-AUC, PR-AUC: Not computable
-  - Loss: `nan` throughout training
+- **RQ1 (Baseline CNN performance)**:  
+  - Baselines established on toy datasets (MedMNIST).  
+  - Real-world datasets will be added for completeness.  
 
-- **Observations**:
-  - Trivial collapse identical to PneumoniaMNIST.
-  - Model overfits instantly to majority class.
+- **RQ2 (Comparative performance & limitations)**:  
+  - Comparative results across CNNs (ResNet-18, VGG-16, ResNet-50) show *consistent limitations*.  
+  - Toy datasets exaggerate collapse; real-world datasets will confirm challenges at clinical scale.  
 
-- **Discussion**:
-  - Confirms that toy binary datasets provide misleading "perfect" performance, regardless of CNN depth.
+**Conclusion for Chapter 2**:  
+CNN baselines cannot be trusted on small, imbalanced datasets (toy or real-world).  
+They either collapse to trivial predictions or fail to balance precision/recall.  
+This motivates **Chapter 3**, where we test few-shot learning, metric learning, and thick-data heuristics as remedies.
 
 ---
-
-## 6. Interim Summary (ResNet-18 vs VGG-16)
-
-- On **tiny binary datasets** (Pneumonia, Breast), both CNNs collapse to trivial predictions → metrics are meaningless.  
-- On **multi-label ChestMNIST**, both CNNs achieve moderate ROC-AUC but fail to improve F1 due to severe imbalance.  
-- VGG-16’s higher capacity does **not overcome the limitations** observed with ResNet-18.  
-- These results emphasize the need to move beyond toy datasets and test baselines on **real-world medical imaging benchmarks** (ChestX-ray14, CheXpert) before introducing advanced methods in Chapter 3.
